@@ -24,3 +24,5 @@ C:\Josee\RepoGitHub\CityInfo\CityInfo.API\obj\Debug\net6.0\CityInfo.API.dll
 C:\Josee\RepoGitHub\CityInfo\CityInfo.API\obj\Debug\net6.0\ref\CityInfo.API.dll
 C:\Josee\RepoGitHub\CityInfo\CityInfo.API\obj\Debug\net6.0\CityInfo.API.pdb
 C:\Josee\RepoGitHub\CityInfo\CityInfo.API\obj\Debug\net6.0\CityInfo.API.genruntimeconfig.cache
+C:\Josee\RepoGitHub\CityInfo\CityInfo.API\obj\Debug\net6.0\CityInfo.API.csproj.AssemblyReference.cache
+C:\Josee\RepoGitHub\CityInfo\CityInfo.API\bin\Debug\net6.0\creating-the-api-and-returning-resources-slides.pdf
