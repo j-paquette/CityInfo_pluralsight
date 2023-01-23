@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.StaticFiles;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,7 +10,9 @@ builder.Services.AddControllers(options =>
     //to indicate to consumer which formatter we DONT support
     options.ReturnHttpNotAcceptable = true;
     //Adds support for Xml formatting
-}).AddXmlDataContractSerializerFormatters();
+}).AddNewtonsoftJson()
+.AddXmlDataContractSerializerFormatters();
+//AddNewtonsoftJson() replaces the default JSON input and output formatters with JSON.NET
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
