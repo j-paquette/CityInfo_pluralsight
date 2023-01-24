@@ -1,6 +1,8 @@
 using CityInfo.API;
+using CityInfo.API.DbContexts;
 using CityInfo.API.Services;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 //This sets up a logfile that will br created everyday
@@ -48,6 +50,13 @@ builder.Services.AddTransient<IMailService, CloudMailService>();
 
 //Register the CitiesDataStore
 builder.Services.AddSingleton<CitiesDataStore>();
+
+//Register DbContext with a scoped lifetime
+//These options are made available by exposing the DbContextOptions base constructor
+//It is configured by passing thru an action. On DbContextOptions, we call into UseSqlLite, and pass a connection string
+//The db will live in the application root.
+builder.Services.AddDbContext<CityInfoContext>(
+    dbContextOptions => dbContextOptions.UseSqlite("Data Source=CityInfo.db"));
 
 var app = builder.Build();
 
