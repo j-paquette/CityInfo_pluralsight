@@ -56,7 +56,8 @@ builder.Services.AddSingleton<CitiesDataStore>();
 //It is configured by passing thru an action. On DbContextOptions, we call into UseSqlLite, and pass a connection string
 //The db will live in the application root.
 builder.Services.AddDbContext<CityInfoContext>(
-    dbContextOptions => dbContextOptions.UseSqlite("Data Source=CityInfo.db"));
+    dbContextOptions => dbContextOptions.UseSqlite(
+        builder.Configuration["ConnectionsStrings:CityInfoDBConnectionString"]));
 
 var app = builder.Build();
 
