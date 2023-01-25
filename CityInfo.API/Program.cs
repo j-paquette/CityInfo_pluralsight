@@ -59,6 +59,15 @@ builder.Services.AddDbContext<CityInfoContext>(
     dbContextOptions => dbContextOptions.UseSqlite(
         builder.Configuration["ConnectionsStrings:CityInfoDBConnectionString"]));
 
+//Register CityInforRepository as a scoped request. Created once per request
+//Pass in the contract(ICityInfoRepository) and the implementation(CityInfoRepository)
+builder.Services.AddScoped<ICityInfoRepository, CityInfoRepository>();
+
+//Register AutoMapper's services on the container
+//We want to get assembies from the current AppDomain
+//Esbures that current assembly (CityInfo.API assembly) will be scanned for profiles
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 var app = builder.Build();
 
 //// Configure the HTTP request pipeline.
