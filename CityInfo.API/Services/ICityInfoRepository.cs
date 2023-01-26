@@ -10,6 +10,9 @@ namespace CityInfo.API.Services
 
         Task<City?> GetCityAsync(int cityId, bool includePointsOfInterest);
 
+        //Add method to determine if the City exists or not
+        Task<bool> CityExistsAsync(int cityId);
+
         //Add method to get points of interest
         Task<IEnumerable<PointOfInterest>> GetPointsOfInterestForCityAsync(int cityId);
 
