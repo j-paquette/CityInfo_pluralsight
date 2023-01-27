@@ -55,5 +55,40 @@ namespace CityInfo.API.Services
             return await _context.PointsOfInterest
                 .Where(p => p.CityId == cityId).ToListAsync();
         }
+
+        //Implement this repository contract, from the method in ICityInfoRepository
+        public async Task AddPointOfInterestForCityAsync(int cityId, PointOfInterest pointOfInterest)
+        {
+            var city = await GetCityAsync(cityId, false);
+            if (city != null)
+            {
+                //Then add the pointOfInterest to its collection of PointsOfInterest
+                //This will ensure the foreign key is set to the cityId when persisting
+                //This is NOT async because it's NOT an I/O call
+                //this method does NOT go to the db
+                //To persist everything, we need to call SaveChangesAsync() on the context
+                city.PointsOfInterest.Add(pointOfInterest);
+            }
+        }
+
+        //Implement this repository contract, from the method in ICityInfoRepository
+        //Call Remove on the pointsOfInterest DbSet, passing thru the pointOfInterest we want to remove
+        public void DeletePointOfInterest(PointOfInterest pointOfInterest)
+        {
+            _context.PointsOfInterest.Remove(pointOfInterest);
+        }
+
+        //Implement this repository contract, from the method in ICityInfoRepository
+        public async Task<bool> SaveChangesAsync()
+        { 
+            //Demo pruposes only: This method should be true when 0 or more entities have been saved
+            //Production: This method should be true when 1 or more entities have been saved successfully
+            return (await _context.SaveChangesAsync() >= 0);
+        }
+
+        public void DeletePointOfInterest(int cityId, PointOfInterest pointOfInterest)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
