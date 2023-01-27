@@ -9,6 +9,11 @@ namespace CityInfo.API.Services
         //Add method to Get the Cities
         Task<IEnumerable<City>> GetCitiesAsync();
 
+        //Add the method to filter by city name, ordered by city name
+        //Search is included as part of the filtering
+        Task<(IEnumerable<City>, PaginationMetadata)> GetCitiesAsync(
+            string? name, string? searchQuery, int pageNumber, int pageSize);
+
         Task<City?> GetCityAsync(int cityId, bool includePointsOfInterest);
 
         //Add method to determine if the City exists or not
