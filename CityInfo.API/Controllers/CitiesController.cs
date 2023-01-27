@@ -2,6 +2,7 @@
 using CityInfo.API.Models;
 using CityInfo.API.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace CityInfo.API.Controllers
 {
@@ -11,6 +12,8 @@ namespace CityInfo.API.Controllers
     {
         private ICityInfoRepository _cityInfoRepository;
         private readonly IMapper _mapper;
+        //Add const to limit the maximum pageSize
+        const int maxCitiesPageSize = 20;
 
         //Inject the contract ICityInfoRepository and NOT the implementation
         //IMapper is the contract AutoMapper's mappers need to adhere to
@@ -23,10 +26,31 @@ namespace CityInfo.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CityWithoutPointsOfInterestDto>>> GetCities()
+        //If your variable does NOT have the same name as the key in the query string,
+        //you can pass thru the key name from the query string by using the name property on the FromQuery attribute
+        //ie, ...[FromQuery(Name = "filteronname")] string? name)
+        //Search is included as part of the filtering
+        //pageNumber, pageSize should have a default in case the user doesn't specify
+        public async Task<ActionResult<IEnumerable<CityWithoutPointsOfInterestDto>>> GetCities(
+            [FromQuery] string? name, string? searchQuery, int pageNumber = 1, int pageSize = 10)
         {
-            var cityEntities = await _cityInfoRepository.GetCitiesAsync();
+            //Check that pageSize doesn't go over maxCitiesPageSize
+            if (pageSize > maxCitiesPageSize)
+            {
+                pageSize = maxCitiesPageSize;
+            }
 
+            //Call the overload method that accepts the name
+            //Put the citEntitites into 2 different variables, to easily access both the collectionToReturn, paginationMetadata
+            var (cityEntities, paginationMetadata) = await _cityInfoRepository
+                .GetCitiesAsync(name, searchQuery, pageNumber, pageSize);
+
+            //Add the PaginationMetadata as a header to our response
+            Response.Headers.Add("X-Pagination",
+                JsonSerializer.Serialize(paginationMetadata));
+
+
+            
 
             //Return the results list
             //Map the cityEntities to CityWithoutPointsOfInterestDto
