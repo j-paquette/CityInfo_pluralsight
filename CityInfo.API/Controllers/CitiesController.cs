@@ -1,4 +1,6 @@
-﻿using CityInfo.API.Models;
+﻿using AutoMapper;
+using CityInfo.API.Models;
+using CityInfo.API.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CityInfo.API.Controllers
@@ -7,32 +9,50 @@ namespace CityInfo.API.Controllers
     [Route("api/cities")]
     public class CitiesController : ControllerBase
     {
-        private readonly CitiesDataStore _citiesDataStore;
+        private ICityInfoRepository _cityInfoRepository;
+        private readonly IMapper _mapper;
 
-        public CitiesController(CitiesDataStore citiesDataStore)
+        //Inject the contract ICityInfoRepository and NOT the implementation
+        //IMapper is the contract AutoMapper's mappers need to adhere to
+        public CitiesController(ICityInfoRepository cityInforRepository, 
+            IMapper mapper)
         {
-            _citiesDataStore = citiesDataStore ?? throw new ArgumentNullException(nameof(citiesDataStore)); 
+            //Null check
+            _cityInfoRepository = cityInforRepository ?? throw new ArgumentNullException(nameof(cityInforRepository));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<CityDto>> GetCities()
+        public async Task<ActionResult<IEnumerable<CityWithoutPointsOfInterestDto>>> GetCities()
         {
-            return Ok(_citiesDataStore.Cities);
+            var cityEntities = await _cityInfoRepository.GetCitiesAsync();
+
+
+            //Return the results list
+            //Map the cityEntities to CityWithoutPointsOfInterestDto
+            //Pass the cityEntities we fetched from our repository as source parameter
+            return Ok(_mapper.Map<IEnumerable<CityWithoutPointsOfInterestDto>>(cityEntities));
         }
 
         [HttpGet("{id}")]
-        public ActionResult<CityDto> GetCity(int id)
+        //Return an IActionResult, instead of an ActionResult,
+        //because the type value passed thru to the ActionResult will NOT ALWAYS by used by other parts of the code
+        //such as the Swagger definition
+        public async Task<IActionResult> GetCity(
+            int id, bool includePointsOfInterest = false)
         {
-            //find city
-            var cityToReturn = _citiesDataStore.Cities
-                .FirstOrDefault(c => c.Id == id);
-
-            if (cityToReturn == null)
+            var city = await _cityInfoRepository.GetCityAsync(id, includePointsOfInterest);
+            if (city == null)
             {
                 return NotFound();
             }
 
-            return Ok(cityToReturn);
+            if (includePointsOfInterest)
+            {
+                return Ok(_mapper.Map<CityDto>(city));
+            }
+
+            return Ok(_mapper.Map<CityWithoutPointsOfInterestDto>(city));
 
         }
     }

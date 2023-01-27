@@ -8,7 +8,7 @@ namespace CityInfo.API.DbContexts
     public class CityInfoContext : DbContext
     {
         //Add null forgiving operator
-        public DbSet<City> City { get; set; } = null!;
+        public DbSet<City> Cities { get; set; } = null!;
         public DbSet<PointOfInterest> PointsOfInterest { get; set; } = null!;
 
         //Connect to the SQLite db by exposing the existing public DbContext(DbContextOptions options).
