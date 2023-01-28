@@ -287,3 +287,6 @@ CodeAnalysisReport.json
 crypto-key.dat
 
 *.GeneratedMSBuildEditorConfig.editorconfig
+
+# Log files
+CityInfo.API/logs
