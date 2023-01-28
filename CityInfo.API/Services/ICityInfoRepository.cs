@@ -36,6 +36,9 @@ namespace CityInfo.API.Services
         //Delete is an in-memory operation, not an I/O operation. It is NOT an async
         void DeletePointOfInterest(PointOfInterest pointOfInterest);
 
+        //Add method to test whether the name we got matches the city ID from the URI
+        Task<bool> CityNameMatchesCityId(string? cityName, int cityId);
+
         //Add method to persist everything, to add pointOfInterest to a City to the db
         Task<bool> SaveChangesAsync();
     }

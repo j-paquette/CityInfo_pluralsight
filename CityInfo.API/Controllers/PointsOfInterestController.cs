@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CityInfo.API.Models;
 using CityInfo.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -8,6 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace CityInfo.API.Controllers
 {
     [Route("api/cities/{cityId}/pointsofinterest")]
+    //This ABAC will be applied to all actions inside this controller
+    [Authorize("MustBeFromAntwerp")]
     //The ApiController Attribute, anotations are automatically checked during model binding ModelState dictionary,
     //and ensures when invalid ModelState returns a 400 Bad Request, along with validation errors returned in the response body 
     [ApiController]
@@ -37,6 +40,16 @@ namespace CityInfo.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PointOfInterestDto>>> GetPointsOfInterest(int cityId)
         {
+            //Example: To restrict access to users who live in the city to access points of interest from that city
+            //To test whether the name we got matches the city ID from the URI
+            var cityName = User.Claims.FirstOrDefault(c => c.Type == "city")?.Value;
+            //execute CityNameMatchesCityId method
+            if (!(await _cityInfoRepository.CityNameMatchesCityId(cityName, cityId)))
+            {
+                //This returns a HTTP error 403: user is authenticated but does NOT have access to points of interest
+                return Forbid();
+            };
+
             //Check whether the city exists or not
             if (!await _cityInfoRepository.CityExistsAsync(cityId))
             {
