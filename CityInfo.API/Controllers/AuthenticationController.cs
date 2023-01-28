@@ -8,6 +8,7 @@ using System.Text;
 namespace CityInfo.API.Controllers
 {
     [Route("api/authentication")]
+    //Do NOT add [Authorize] here, users need to have access to this to get a token
     [ApiController]
     public class AuthenticationController : ControllerBase
     {

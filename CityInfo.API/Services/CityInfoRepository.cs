@@ -20,6 +20,12 @@ namespace CityInfo.API.Services
             return await _context.Cities.OrderBy(c => c.Name).ToListAsync();
         }
 
+        //Implement method
+        public async Task<bool> CityNameMatchesCityId(string? cityName, int cityId)
+        {
+            return await _context.Cities.AnyAsync(c => c.Id == cityId && c.Name == cityName);
+        }
+
         //Add a method to implement filtering Cities by name
         //Search is included as part of the filtering
         //Can return metadata from this method, by converting method to a tuple.
