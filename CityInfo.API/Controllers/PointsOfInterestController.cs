@@ -8,9 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CityInfo.API.Controllers
 {
-    [Route("api/cities/{cityId}/pointsofinterest")]
+    //By adding v{version:appiVersion} inside the Route, we allow the user to pass thru a version parameter.
+    //which will be compared to the supported API version
+    [Route("api/v{version:apiVersion}/cities/{cityId}/pointsofinterest")]
     //This ABAC will be applied to all actions inside this controller
     [Authorize("MustBeFromAntwerp")]
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
     //The ApiController Attribute, anotations are automatically checked during model binding ModelState dictionary,
     //and ensures when invalid ModelState returns a 400 Bad Request, along with validation errors returned in the response body 
     [ApiController]
@@ -44,11 +48,11 @@ namespace CityInfo.API.Controllers
             //To test whether the name we got matches the city ID from the URI
             var cityName = User.Claims.FirstOrDefault(c => c.Type == "city")?.Value;
             //execute CityNameMatchesCityId method
-            if (!(await _cityInfoRepository.CityNameMatchesCityId(cityName, cityId)))
-            {
-                //This returns a HTTP error 403: user is authenticated but does NOT have access to points of interest
-                return Forbid();
-            };
+            //if (!(await _cityInfoRepository.CityNameMatchesCityId(cityName, cityId)))
+            //{
+            //    //This returns a HTTP error 403: user is authenticated but does NOT have access to points of interest
+            //    return Forbid();
+            //};
 
             //Check whether the city exists or not
             if (!await _cityInfoRepository.CityExistsAsync(cityId))

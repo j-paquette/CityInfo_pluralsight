@@ -9,7 +9,11 @@ namespace CityInfo.API.Controllers
 {
     [ApiController]
     [Authorize]
-    [Route("api/cities")]
+    [ApiVersion("1.0")]
+    [ApiVersion("2.0")]
+    //By adding v{version:appiVersion} inside the Route, we allow the user to pass thru a version parameter.
+    //which will be compared to the supported API version
+    [Route("api/v{version:apiVersion}/cities")]
     public class CitiesController : ControllerBase
     {
         private ICityInfoRepository _cityInfoRepository;
@@ -60,7 +64,18 @@ namespace CityInfo.API.Controllers
             return Ok(_mapper.Map<IEnumerable<CityWithoutPointsOfInterestDto>>(cityEntities));
         }
 
+        /// <summary>
+        /// Get a city by id
+        /// </summary>
+        /// <param name="id">The id of the city to get</param>
+        /// <param name="includePointsOfInterest">Whether or not to include the points of interest</param>
+        /// <returns>An IActionResult</returns>
+        /// <response code="200">Returns the requested city</response>
+        /// 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         //Return an IActionResult, instead of an ActionResult,
         //because the type value passed thru to the ActionResult will NOT ALWAYS by used by other parts of the code
         //such as the Swagger definition

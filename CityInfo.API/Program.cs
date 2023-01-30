@@ -4,7 +4,9 @@ using CityInfo.API.Services;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Reflection;
 using System.Text;
 
 //This sets up a logfile that will br created everyday
@@ -36,8 +38,53 @@ builder.Services.AddControllers(options =>
 //AddNewtonsoftJson() replaces the default JSON input and output formatters with JSON.NET
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+//Swashbuckle uses Swagger internally and exposes the endpoints and how to interact with them, by default in the MS template
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+//This registers services that are used for generating the spec
+//Configure Swagger to include the XML comments as part of generated spec docs
+builder.Services.AddSwaggerGen(setupAction =>
+{
+    //Uses reflection to get the filename from the Assembly, to get the simplified name (GetName())
+    var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    //Use the Path object to get the full path of the file
+    //Call Combine, passing thru the BaseDirectory of our app as the first parameter
+    //BaseDirectory is where the file resides
+    //xmlCommentsFile is the full name
+    var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+
+    //Call IncludeXmlComments to tell Swashbuckle to use this file to read the XML comments from
+    setupAction.IncludeXmlComments(xmlCommentsFullPath);
+
+    //Define the security definition by calling into AddSecurityDefinition
+    //SecurityScheme is refrenced with Id CityInfoApiBearerAuth
+    setupAction.AddSecurityDefinition("CityInfoApiBearerAuth", new OpenApiSecurityScheme()
+    {
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        Description = "Input a valid token to access this API"
+    });
+
+    //This will automatically send a valid token as authorization header in the request by our documentation UI
+    //OpenApiSecurityScheme is a dictionary with an OpenAPISecurityScheme as key
+    //We want to reference the OpenAPISecurityScheme that was used when a security definition was added
+    setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference {
+                    //Pass a reference object, that will reference the OpenAPISecurityScheme
+                    //that was used when a security definition was added
+                    Type = ReferenceType.SecurityScheme,
+                    //SecurityScheme is refrenced with Id CityInfoApiBearerAuth
+                    //That matches the previously added definition
+                    Id = "CityInfoApiBearerAuth" }
+                //The value of the ditcionary item is a list of string
+                //This is used when working with tokens & scopes
+                //Since this app uses basic auth, just pass thru an empty list
+            }, new List<string>() }
+    });
+});
 
 //Allows us to inject a FileExtensionContentTypeProvider in other parts of our code. Used for different file formats
 builder.Services.AddSingleton<FileExtensionContentTypeProvider>();
@@ -100,13 +147,28 @@ builder.Services.AddAuthorization(options =>
 
 });
 
+//Register versioning package here
+//Configure it to choose a default version = 1.0 if none is selected
+builder.Services.AddApiVersioning(setupAction =>
+{
+    setupAction.AssumeDefaultVersionWhenUnspecified = true;
+    setupAction.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+    setupAction.ReportApiVersions = true;
+});
+
+
 
 var app = builder.Build();
 
 //// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    //Adds the middleware that generates the OpenAPI specification
     app.UseSwagger();
+    //Add the middleware that uses that spec to generate the default Swagger UI documentation UI
+    //The Schemas/models are generated when a method of ActionResult<T> in the Actions
+    //The model class/Schemas would NOT be displayed if returning were IActionResult.
+    //Use ActionResult<T> whenever possible
     app.UseSwaggerUI();
 }
 
